@@ -6,7 +6,7 @@ Streamlit, ChromaDB, and Google's Gemini API.
 
 ## Features
 
-| Requirement | Status | Notes |
+| Requirement | Notes |
 |---|---|---|
 | User authentication | Simulated login/register (accounts persisted locally in `data/users.json`, password hashed) + guest mode — demo-grade, not production security |
 | Multi-document upload | PDF, TXT, Markdown, **DOCX (bonus)** |
