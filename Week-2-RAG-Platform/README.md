@@ -18,17 +18,17 @@ Streamlit, ChromaDB, and Google's Gemini API.
 | **Conversation Memory** | Session-scoped chat history used as context for follow-up questions |
 | **Document Management** | View, delete, and refresh (re-embed) documents from the sidebar |
 | **Professional UI** | Upload panel, chat window, document library, processing status, and statistics on one dashboard |
-| **Hybrid Search (Bonus)** | Semantic + BM25 keyword fusion with adjustable weight |
-| **Metadata Filtering (Bonus)** | Restrict search/chat to selected documents only |
-| **Document Comparison (Bonus)** | Side-by-side LLM comparison of any two uploaded documents |
-| **Auto Summarization (Bonus)** | On-demand per-document summary after processing |
-| **Suggested Questions (Bonus)** | Auto-generated starter questions for each document |
-| **Chat Export (Bonus)** | Export conversation as Markdown or JSON |
-| **Token Usage Dashboard (Bonus)** | Running token count and estimated USD cost in the sidebar |
-| **Dark Mode (Bonus)** | Toggle Dark Mode from the sidebar |
-| **Answer Confidence Score (Bonus)** | Color-coded High / Medium / Low confidence badge based on retrieval similarity |
-| **File Validation (Bonus)** | Rejects unsupported types, empty files, and files larger than 15 MB before processing |
-| **Auto Chunk-size Suggestion (Bonus)** | Suggests a chunk size based on uploaded file size with a one-click **Use it** button |
+| **Hybrid Search** | Semantic + BM25 keyword fusion with adjustable weight |
+| **Metadata Filtering** | Restrict search/chat to selected documents only |
+| **Document Comparison** | Side-by-side LLM comparison of any two uploaded documents |
+| **Auto Summarization** | On-demand per-document summary after processing |
+| **Suggested Questions** | Auto-generated starter questions for each document |
+| **Chat Export** | Export conversation as Markdown or JSON |
+| **Token Usage Dashboard** | Running token count and estimated USD cost in the sidebar |
+| **Dark Mode** | Toggle Dark Mode from the sidebar |
+| **Answer Confidence Score** | Color-coded High / Medium / Low confidence badge based on retrieval similarity |
+| **File Validation** | Rejects unsupported types, empty files, and files larger than 15 MB before processing |
+| **Auto Chunk-size Suggestion** | Suggests a chunk size based on uploaded file size with a one-click **Use it** button |
 
 ## Setup
 
