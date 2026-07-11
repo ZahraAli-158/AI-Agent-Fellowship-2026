@@ -8,27 +8,27 @@ Streamlit, ChromaDB, and Google's Gemini API.
 
 | Requirement | Status | Notes |
 |---|---|---|
-| User authentication | ✅ | Simulated login/register (accounts persisted locally in `data/users.json`, password hashed) + guest mode — demo-grade, not production security |
-| Multi-document upload | ✅ | PDF, TXT, Markdown, **DOCX (bonus)** |
-| Document processing | ✅ | Extraction, cleaning, chunking; shows pages/chunks/status live, with a staged progress view (extract → chunk → embed → store) |
-| Embedding generation | ✅ | Gemini `gemini-embedding-001` **or** fully offline local TF-IDF fallback; stored in **ChromaDB** |
-| Semantic search | ✅ | Top-k retrieval shown in an expandable panel before/with every answer |
-| Conversational chat | ✅ | Natural chat UI, history, follow-ups (recent turns fed back to the model) |
-| Source citation | ✅ | Every answer cites document name, page number (if available), and chunk index |
-| Conversation memory | ✅ | Session-scoped chat history, used as context for follow-ups |
-| Document management | ✅ | View, delete, and refresh (re-embed) documents from the sidebar |
-| Professional UI | ✅ | Upload panel, chat window, document library, processing status, statistics — all on one dashboard |
-| Hybrid search (bonus) | ✅ | Semantic + BM25 keyword fusion, adjustable weight |
-| Metadata filtering (bonus) | ✅ | Restrict search/chat to selected documents only |
-| Document comparison (bonus) | ✅ | Side-by-side LLM comparison of any two uploaded documents |
-| Auto-summarization (bonus) | ✅ | On-demand per-document summary after processing |
-| Suggested questions (bonus) | ✅ | Auto-generated starter questions per document |
-| Chat export (bonus) | ✅ | Export conversation as Markdown or JSON |
-| Token usage dashboard (bonus) | ✅ | Running token count + estimated USD cost in the sidebar |
-| Dark mode (bonus) | ✅ | Toggle in the sidebar |
-| Answer confidence score (bonus) | ✅ | Color-coded High/Medium/Low badge on every answer, based on top retrieval similarity |
-| File validation (bonus) | ✅ | Rejects unsupported types, empty files, and files over 15 MB with a clear reason before processing starts |
-| Auto chunk-size suggestion (bonus) | ✅ | Suggests a chunk size based on the uploaded file's size, with a one-click "Use it" button |
+| User authentication | Simulated login/register (accounts persisted locally in `data/users.json`, password hashed) + guest mode — demo-grade, not production security |
+| Multi-document upload | PDF, TXT, Markdown, **DOCX (bonus)** |
+| Document processing | Extraction, cleaning, chunking; shows pages/chunks/status live, with a staged progress view (extract → chunk → embed → store) |
+| Embedding generation | Gemini `gemini-embedding-001` **or** fully offline local TF-IDF fallback; stored in **ChromaDB** |
+| Semantic search | Top-k retrieval shown in an expandable panel before/with every answer |
+| Conversational chat | Natural chat UI, history, follow-ups (recent turns fed back to the model) |
+| Source citation | Every answer cites document name, page number (if available), and chunk index |
+| Conversation memory | Session-scoped chat history, used as context for follow-ups |
+| Document management | View, delete, and refresh (re-embed) documents from the sidebar |
+| Professional UI | Upload panel, chat window, document library, processing status, statistics — all on one dashboard |
+| Hybrid search (bonus) | Semantic + BM25 keyword fusion, adjustable weight |
+| Metadata filtering (bonus) | Restrict search/chat to selected documents only |
+| Document comparison (bonus) | Side-by-side LLM comparison of any two uploaded documents |
+| Auto-summarization (bonus) | On-demand per-document summary after processing |
+| Suggested questions (bonus) | Auto-generated starter questions per document |
+| Chat export (bonus) | Export conversation as Markdown or JSON |
+| Token usage dashboard (bonus) | Running token count + estimated USD cost in the sidebar |
+| Dark mode (bonus) | Toggle in the sidebar |
+| Answer confidence score (bonus) | Color-coded High/Medium/Low badge on every answer, based on top retrieval similarity |
+| File validation (bonus) | Rejects unsupported types, empty files, and files over 15 MB with a clear reason before processing starts |
+| Auto chunk-size suggestion (bonus) | Suggests a chunk size based on the uploaded file's size, with a one-click "Use it" button |
 
 ## Setup
 
