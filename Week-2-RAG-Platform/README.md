@@ -9,7 +9,7 @@ Streamlit, ChromaDB, and Google's Gemini API.
 | Feature | Description |
 |----------|-------------|
 | **User Authentication** | Simulated login/register (accounts persisted locally in `data/users.json`, password hashed) + guest mode — demo-grade, not production security |
-| **Multi-document Upload** | Supports PDF, TXT, Markdown, and **DOCX (bonus)** |
+| **Multi-document Upload** | Supports PDF, TXT, Markdown, and **DOCX** |
 | **Document Processing** | Extraction, cleaning, chunking; shows pages, chunks, and processing status with a staged progress view (Extract → Chunk → Embed → Store) |
 | **Embedding Generation** | Gemini `gemini-embedding-001` or fully offline Local TF-IDF fallback; stored in ChromaDB |
 | **Semantic Search** | Top-k retrieval shown in an expandable panel before/with every answer |
