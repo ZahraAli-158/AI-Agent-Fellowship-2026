@@ -1,0 +1,33 @@
+{
+  "topic": "rag_enterprise_chatbots",
+  "documents": [
+    {
+      "doc_id": "RAG-01",
+      "title": "Vector-Search RAG — Architecture Overview",
+      "source": "https://example-docs.internal/rag/vector-search",
+      "framework": "Vector-Search RAG",
+      "content": "Vector-Search RAG retrieves the most semantically similar chunks of enterprise documents from a vector database at query time and inserts them into the model's context before it answers. This lets an enterprise chatbot ground its answers in internal knowledge (policies, product docs, support tickets) without retraining the underlying model, so newly added or edited documents become answerable within minutes of being indexed. The main costs are embedding and indexing pipelines, ongoing vector-store hosting, and careful chunking/retrieval tuning to avoid pulling in irrelevant context. Compared to relying on the base model's parametric knowledge alone, it substantially reduces hallucinated answers about company-specific facts and gives a clear citation trail back to the source document."
+    },
+    {
+      "doc_id": "RAG-02",
+      "title": "Hybrid Retrieval RAG — Architecture Overview",
+      "source": "https://example-docs.internal/rag/hybrid-retrieval",
+      "framework": "Hybrid Retrieval RAG",
+      "content": "Hybrid Retrieval RAG combines classic keyword/BM25 search with vector similarity search, then re-ranks the merged candidate set before passing it to the model. This addresses a known weakness of pure vector search — exact terms like product SKUs, error codes, or legal clause numbers can be semantically diluted in embedding space but are trivial to match with keyword search. Enterprise chatbots built this way tend to answer both natural-language questions and exact-term lookups reliably, at the cost of extra retrieval-pipeline complexity and a second index to maintain. It is generally the more production-ready choice when the underlying corpus is a mix of free-text documentation and structured or code-like references."
+    },
+    {
+      "doc_id": "RAG-03",
+      "title": "Fine-Tuned Model (No RAG) — Baseline Comparison",
+      "source": "https://example-docs.internal/rag/fine-tuning-baseline",
+      "framework": "Fine-Tuned Model (No RAG)",
+      "content": "An alternative to retrieval-augmented generation is fine-tuning a model directly on enterprise data so the knowledge is baked into the model's weights. This can produce fast, self-contained answers with no retrieval step, but it has real drawbacks for an enterprise chatbot: every content update requires a new fine-tuning run rather than a document re-index, the model has no built-in citation trail back to a source document, and fine-tuning is more prone to silently memorizing stale facts. In practice, fine-tuning is often used to teach a model tone or output format, while RAG is used to keep the model's factual knowledge current — the two approaches are complementary rather than strictly competing."
+    },
+    {
+      "doc_id": "RAG-04",
+      "title": "Enterprise Chatbot Deployment Notes — Compliance and Cost",
+      "source": "https://example-docs.internal/rag/enterprise-deployment-notes",
+      "framework": "General",
+      "content": "For regulated enterprises, RAG-based chatbots have a compliance advantage: access-controlled retrieval can respect the same document permissions as the source system, and every answer can be traced back to a specific, auditable document version. Cost scales primarily with the number of retrieval calls and the size of the context window used per query rather than with periodic retraining, which makes ongoing spend more predictable than a fine-tuning-heavy approach. The main production-readiness risks are retrieval latency under load and 'context stuffing' (retrieving too much irrelevant text), both of which are mitigated by re-ranking, caching frequent queries, and setting a hard cap on retrieved chunks per query."
+    }
+  ]
+}
