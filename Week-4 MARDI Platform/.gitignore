@@ -1,0 +1,25 @@
+# --- Secrets ---
+.env
+backend/.env
+
+# --- Python ---
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+backend/venv/
+*.egg-info/
+
+# --- Node / frontend ---
+node_modules/
+frontend/dist/
+frontend/node_modules/
+
+# --- Runtime artifacts ---
+traces/
+backend/traces/
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/
