@@ -1,0 +1,26 @@
+{
+  "topic": "cloud_platforms",
+  "documents": [
+    {
+      "doc_id": "CP-01",
+      "title": "AWS — Bedrock and SageMaker for AI Workloads",
+      "source": "https://aws.amazon.com/bedrock/",
+      "framework": "AWS",
+      "content": "AWS offers Bedrock for managed access to foundation models and SageMaker for custom model training and hosting. It has the broadest set of regions and enterprise compliance certifications among the three major providers, which matters for regulated industries, but its pricing model and IAM permission surface are frequently cited as the most complex to configure correctly."
+    },
+    {
+      "doc_id": "CP-02",
+      "title": "Google Cloud — Vertex AI Platform",
+      "source": "https://cloud.google.com/vertex-ai",
+      "framework": "Google Cloud",
+      "content": "Vertex AI provides a unified interface for model training, fine-tuning, and deployment, with tight integration to Google's own Gemini model family. Onboarding documentation and starter templates are generally rated as clearer for small teams than AWS's equivalent, though its available model marketplace is comparatively smaller."
+    },
+    {
+      "doc_id": "CP-03",
+      "title": "Microsoft Azure — Azure AI Foundry",
+      "source": "https://azure.microsoft.com/en-us/products/ai-foundry",
+      "framework": "Azure",
+      "content": "Azure AI Foundry bundles model hosting, evaluation, and content-safety tooling in one console, and has strong first-party support for OpenAI models under enterprise agreements. Organizations already using Microsoft 365 or Active Directory often report faster procurement and identity-integration timelines than with AWS or GCP."
+    }
+  ]
+}

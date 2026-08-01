@@ -1,0 +1,47 @@
+{
+  "topic": "agent_frameworks",
+  "documents": [
+    {
+      "doc_id": "AF-01",
+      "title": "LangGraph Documentation — Graph-based Orchestration",
+      "source": "https://langchain-ai.github.io/langgraph/",
+      "framework": "LangGraph",
+      "content": "LangGraph models an agent workflow as an explicit state graph. Nodes are Python functions, edges (including conditional edges) define control flow, and a single typed state object is threaded through every node. It natively supports cycles, which makes revision loops and human-in-the-loop checkpoints straightforward to express. Parallel branches are supported via the Send API, which fans out multiple invocations of a node and merges their state writes using reducer functions. Production deployments typically use a checkpointer to persist state between steps, enabling pause/resume and durable execution."
+    },
+    {
+      "doc_id": "AF-02",
+      "title": "CrewAI Documentation — Role-based Agent Collaboration",
+      "source": "https://docs.crewai.com/",
+      "framework": "CrewAI",
+      "content": "CrewAI organizes a system around 'agents' with a role, goal, and backstory, coordinated by a 'crew' using either a sequential or hierarchical process manager. This abstraction is easier to reason about for straightforward pipelines, and reduces boilerplate for common patterns like a researcher-writer pair. It offers less granular control over intermediate state than graph-based frameworks, and cyclical or conditional workflows require more manual scaffolding."
+    },
+    {
+      "doc_id": "AF-03",
+      "title": "OpenAI Agents SDK — Handoffs and Guardrails",
+      "source": "https://platform.openai.com/docs/guides/agents",
+      "framework": "OpenAI Agents SDK",
+      "content": "The OpenAI Agents SDK provides a lightweight primitive called a Handoff, which lets one agent transfer control and context to another agent mid-run. It includes built-in guardrails for input/output validation and tracing. State management is comparatively implicit: context is passed as part of the conversation rather than a strongly-typed shared object, which can make debugging complex multi-step workflows harder as the number of agents grows."
+    },
+    {
+      "doc_id": "AF-04",
+      "title": "Community Benchmark Notes — Framework Reliability (aggregated, informal)",
+      "source": "community-benchmarks-aggregate-2026",
+      "framework": "all",
+      "content": "Several independent write-ups compare startup latency and token overhead across LangGraph, CrewAI, and the OpenAI Agents SDK, but none use a standardized methodology, and sample sizes are small. Reported latency overhead ranges from 5-15% versus a single raw LLM call, attributed mostly to orchestration bookkeeping. No source in this set provides a rigorous production-reliability (uptime/error-rate) comparison; this remains a genuine evidence gap as of mid-2026."
+    },
+    {
+      "doc_id": "AF-05",
+      "title": "LangGraph — State Management Deep Dive",
+      "source": "https://langchain-ai.github.io/langgraph/concepts/low_level/",
+      "framework": "LangGraph",
+      "content": "LangGraph state is typically defined as a TypedDict or Pydantic model. Fields can specify a reducer (e.g. operator.add) so that when multiple parallel branches write to the same field, LangGraph merges the writes deterministically instead of one branch overwriting another. This is the mechanism that makes fan-out/fan-in patterns (e.g. multiple research agents running in parallel) safe without manual locking."
+    },
+    {
+      "doc_id": "AF-06",
+      "title": "CrewAI — Getting Started Guide",
+      "source": "https://docs.crewai.com/getting-started",
+      "framework": "CrewAI",
+      "content": "A minimal CrewAI setup requires defining agents and tasks, then instantiating a Crew and calling kickoff(). Most tutorials report a working prototype within an afternoon for teams already familiar with basic LLM prompting, which is frequently cited as its main advantage for small teams and early-stage products."
+    }
+  ]
+}
