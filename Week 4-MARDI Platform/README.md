@@ -299,7 +299,7 @@ No `LICENSE` file is currently present in this repository (see
 Built by **Zahra**, Final Year BS Artificial Intelligence student at The
 University of Faisalabad, Amin Campus, as part of the
 **AI-Agent-Fellowship-2026** program (Track: AI Agents), under the
-supervision of **Sir Ahmad Shahzad**.
+supervision of **Sir Gufran Rana**.
 
 ## What Changed From the CLI-only Version
 
