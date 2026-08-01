@@ -1,0 +1,51 @@
+# Render Blueprint — deploys both services from this one repo.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# To use: push this repo to GitHub, then in the Render dashboard choose
+# "New +" -> "Blueprint" and point it at the repo. Render reads this file
+# automatically and provisions both services below.
+
+services:
+  # --- FastAPI backend (Docker) ---
+  - type: web
+    name: mardi-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: LLM_MODE
+        value: auto
+      - key: LLM_TIMEOUT_S
+        value: "30"
+      - key: TOOL_MAX_RETRIES
+        value: "1"
+      - key: MAX_REVISIONS
+        value: "2"
+      - key: AUTO_APPROVE_CHECKPOINTS
+        value: "false"
+      # Set this one's actual value in the Render dashboard, NOT here —
+      # "sync: false" means Render prompts for it interactively and never
+      # stores it in this file or in version control.
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # --- React frontend (static site) ---
+  - type: web
+    name: mardi-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      # Must match the backend service's actual deployed URL. Render
+      # exposes each service's URL after first deploy — update this and
+      # redeploy the frontend once the backend URL is known.
+      - key: VITE_API_BASE
+        value: https://mardi-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
