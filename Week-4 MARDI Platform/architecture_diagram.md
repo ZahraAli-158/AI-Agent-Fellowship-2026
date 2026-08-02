@@ -1,7 +1,6 @@
 # Architecture Diagram
 
-GitHub renders the Mermaid diagram below natively when this file is viewed
-in the repo — no external image needed.
+The following diagram illustrates the overall architecture and key components of the system.
 
 ## System Architecture
 
