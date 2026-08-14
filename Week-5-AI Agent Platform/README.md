@@ -106,32 +106,3 @@ and page numbers.
 
 With the backend running locally, the interactive API docs are also live at
 `http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc`.
-
-## Screenshots & Demo Video
-
-Not included as static files in this repo — capturing them requires a real browser against the
-running app. `docs/screenshots/README.md` has the exact list and filenames to capture (Win+Shift+S
-works fine) before pushing to GitHub. For a demo video, a 2–3 minute screen recording (OBS Studio,
-Xbox Game Bar, or Loom) walking through: register → create workspace → configure assistant → chat →
-upload a document → ask a grounded question → run an AI skill → check the dashboard, covers the core
-flow well.
-
-## Deployment
-
-Not yet deployed to a live URL — this requires your own hosting accounts/credentials.
-See `docs/7_Deployment_Guide.docx` for exact manual steps to publish to GitHub and deploy via Render
-(backend) + Streamlit Community Cloud (frontend), or self-host via `docker compose up --build`.
-
-## Pushing to GitHub
-
-```bash
-cd ai-workspace-platform
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin <your-repo-url>
-git push -u origin main
-```
-
-`.gitignore` already excludes `.env`, `*.db`, `uploads/`, and `vector_store/` — never commit real API keys.
