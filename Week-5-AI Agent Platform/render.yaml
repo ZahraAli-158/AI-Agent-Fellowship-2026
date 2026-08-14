@@ -1,0 +1,15 @@
+# Render.com deployment blueprint for the backend API.
+# Manual step required: create the service from this repo on render.com,
+# then set GEMINI_API_KEY / OPENAI_API_KEY / ANTHROPIC_API_KEY / SECRET_KEY
+# as environment variables in the Render dashboard (never commit real keys).
+services:
+  - type: web
+    name: ai-workspace-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEFAULT_MODEL
+        value: gemini-2.5-flash
+      - key: DATABASE_URL
+        value: sqlite:///./ai_workspace.db
