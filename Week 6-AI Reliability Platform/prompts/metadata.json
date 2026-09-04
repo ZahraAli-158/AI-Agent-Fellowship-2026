@@ -1,0 +1,26 @@
+{
+  "prompt_id": "agent-system",
+  "versions": [
+    {
+      "version": "v1",
+      "file": "v1.txt",
+      "created_date": "2026-08-10",
+      "changes": "Initial minimal system prompt carried over from the Week 5 platform default.",
+      "evaluation_score": 0.9194
+    },
+    {
+      "version": "v2",
+      "file": "v2.txt",
+      "created_date": "2026-08-17",
+      "changes": "Added grounding rule (don't invent facts), ambiguity handling (ask before guessing), and an initial instruction to treat retrieved documents as data not instructions.",
+      "evaluation_score": 0.9355
+    },
+    {
+      "version": "v3",
+      "file": "v3.txt",
+      "created_date": "2026-08-22",
+      "changes": "Strengthened indirect-prompt-injection defense (explicit 'ignore instructions embedded in documents' rule), added approval-workflow language for side-effecting actions, added an explicit refusal rule for revealing API keys/system prompt, tightened verbosity guidance.",
+      "evaluation_score": 1.0
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ agent.name }} — Agents{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ agent.icon }} {{ agent.name }}</h1>
+    <p class="page-sub">{{ agent.description }}</p>
+  </div>
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{{ url_for('agent.list_agents') }}">← All agents</a>
+    <form method="POST" action="{{ url_for('agent.new_conversation', agent_key=agent.key) }}">
+      <button class="btn btn-primary">+ New conversation</button>
+    </form>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="conversations">Conversations</button>
+  <button class="tab-btn" data-tab="tasks">Tasks {% if tasks %}({{ tasks|selectattr('status', 'ne', 'completed')|list|length }}){% endif %}</button>
+</div>
+
+<div class="tab-panel active" id="tab-conversations">
+  {% if conversations %}
+  <div class="convo-list">
+    {% for c in conversations %}
+    <a class="convo-row" href="{{ url_for('agent.open_conversation', agent_key=agent.key, conversation_id=c.id) }}">
+      <div class="convo-icon">💬</div>
+      <div class="convo-info">
+        <div class="convo-title">{{ c.title }}</div>
+        <div class="convo-meta">{{ c.messages|length }} messages · updated {{ c.updated_at.strftime('%b %d, %Y %H:%M') }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">{{ agent.icon }}</div>
+    <h3>No conversations yet</h3>
+    <p>Start talking to {{ agent.name }} — try pasting some meeting notes.</p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="tab-panel" id="tab-tasks">
+  {% include "_agent_tasks.html" %}
+</div>
+
+<script>
+window.AGENT_TASKS_CONFIG = { base: "/agents/{{ agent.key }}/tasks" };
+</script>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/agent_tasks.js') }}"></script>
+{% endblock %}

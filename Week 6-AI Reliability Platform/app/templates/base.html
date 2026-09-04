@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}AI Workspace Platform{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+<div class="bg-glow bg-glow-3"></div>
+
+{% if current_user.is_authenticated %}
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <a class="brand" href="{{ url_for('workspace.list_workspaces') }}">
+      <span class="brand-mark">✦</span>
+      <span class="brand-text">AI Workspace</span>
+    </a>
+
+    <nav class="side-nav">
+      <a href="{{ url_for('workspace.list_workspaces') }}" class="side-link {% if request.endpoint == 'workspace.list_workspaces' %}active{% endif %}">
+        <span class="ic">🗂️</span> Workspaces
+      </a>
+      <a href="{{ url_for('observability.view_dashboard') }}" class="side-link {% if request.endpoint and request.endpoint.startswith('observability.') %}active{% endif %}">
+        <span class="ic">🛡️</span> Reliability
+      </a>
+      {% if ws %}
+      <div class="side-section-label">{{ ws.name }}</div>
+      <a href="{{ url_for('workspace.view_workspace', workspace_id=ws.id) }}" class="side-link {% if request.endpoint == 'workspace.view_workspace' %}active{% endif %}">
+        <span class="ic">💬</span> Conversations
+      </a>
+      <a href="{{ url_for('knowledge.list_documents', workspace_id=ws.id) }}" class="side-link {% if 'knowledge' in request.endpoint %}active{% endif %}">
+        <span class="ic">📚</span> Knowledge Base
+      </a>
+      <a href="{{ url_for('prompt.list_prompts', workspace_id=ws.id) }}" class="side-link {% if 'prompt' in request.endpoint %}active{% endif %}">
+        <span class="ic">📝</span> Prompt Library
+      </a>
+      <a href="{{ url_for('skill.list_skills', workspace_id=ws.id) }}" class="side-link {% if 'skill' in request.endpoint %}active{% endif %}">
+        <span class="ic">🧩</span> AI Skills
+      </a>
+      <a href="{{ url_for('dashboard.view_dashboard', workspace_id=ws.id) }}" class="side-link {% if 'dashboard' in request.endpoint %}active{% endif %}">
+        <span class="ic">📊</span> Dashboard
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="side-footer">
+      <button id="theme-toggle" class="theme-toggle" title="Toggle dark mode">
+        <span id="theme-icon">🌙</span> <span>Dark mode</span>
+      </button>
+      <div class="user-chip">
+        <div class="avatar">{{ current_user.username[0]|upper }}</div>
+        <div class="user-meta">
+          <div class="user-name">{{ current_user.username }}</div>
+          <a href="{{ url_for('auth.logout') }}" class="logout-link">Log out</a>
+        </div>
+      </div>
+      {% if not gemini_configured %}
+      <div class="api-warning">⚠️ No Gemini API key set — running in offline demo mode.</div>
+      {% endif %}
+    </div>
+  </aside>
+
+  <main class="app-main">
+    {% include "_flashes.html" %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+  {% include "_flashes.html" %}
+  {% block guest_content %}{% endblock %}
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/background.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

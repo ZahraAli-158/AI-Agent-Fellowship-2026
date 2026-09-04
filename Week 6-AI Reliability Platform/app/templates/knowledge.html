@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Base — {{ ws.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Knowledge Base</h1>
+    <p class="page-sub">Upload documents to ground {{ ws.assistant_name }} in your own content.</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('upload-modal')">+ Upload document</button>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+  <label>🔍 Semantic search across all documents</label>
+  <input type="text" id="kb-search" placeholder="Search your knowledge base..." class="search-input">
+  <div id="kb-search-results" class="kb-search-results"></div>
+</div>
+
+{% if documents %}
+<div class="doc-grid">
+  {% for d in documents %}
+  <div class="doc-card">
+    <div class="doc-card-head">
+      <span class="doc-type-badge">{{ d.filetype|upper }}</span>
+      <form method="POST" action="{{ url_for('knowledge.delete_document', workspace_id=ws.id, document_id=d.id) }}"
+            onsubmit="return confirm('Delete {{ d.filename }}?');">
+        <button class="icon-btn danger" title="Delete">🗑️</button>
+      </form>
+    </div>
+    <h3 title="{{ d.filename }}">{{ d.filename }}</h3>
+    <p class="doc-summary">{{ d.summary or "No summary available." }}</p>
+    <div class="doc-meta">{{ d.chunks|length }} chunks · {{ d.char_count }} characters · {{ d.uploaded_at.strftime('%b %d, %Y') }}</div>
+    <button class="btn btn-outline btn-sm" onclick="openAskModal({{ d.id }}, '{{ d.filename|e }}')">💬 Ask this document</button>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">📚</div>
+  <h3>No documents yet</h3>
+  <p>Upload PDF, DOCX, TXT, or Markdown files to build your knowledge base.</p>
+</div>
+{% endif %}
+
+<div class="modal" id="upload-modal">
+  <div class="modal-card">
+    <h3>Upload a document</h3>
+    <form method="POST" action="{{ url_for('knowledge.upload_document', workspace_id=ws.id) }}" enctype="multipart/form-data">
+      <label>File (PDF, DOCX, TXT, MD — max 25MB)</label>
+      <input type="file" name="document" accept=".pdf,.docx,.txt,.md" required>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('upload-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Upload & Index</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="ask-modal">
+  <div class="modal-card">
+    <h3 id="ask-modal-title">Ask this document</h3>
+    <textarea id="ask-input" rows="3" placeholder="What would you like to know?"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('ask-modal')">Cancel</button>
+      <button type="button" class="btn btn-primary" id="ask-submit-btn" onclick="submitAsk()">Ask</button>
+    </div>
+    <div id="ask-answer" class="ask-answer"></div>
+  </div>
+</div>
+
+<script>
+  window.KB_CONFIG = {
+    searchUrl: "{{ url_for('knowledge.search_documents', workspace_id=ws.id) }}",
+    askUrlBase: "/workspaces/{{ ws.id }}/knowledge"
+  };
+</script>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/knowledge.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{
+  "top_k=2": {
+    "retrieval_hit_rate": 1.0,
+    "avg_context_precision": 1.0,
+    "avg_chunks_returned": 2.0
+  },
+  "top_k=4": {
+    "retrieval_hit_rate": 1.0,
+    "avg_context_precision": 0.6667,
+    "avg_chunks_returned": 3.0
+  },
+  "top_k=8": {
+    "retrieval_hit_rate": 1.0,
+    "avg_context_precision": 0.6667,
+    "avg_chunks_returned": 3.0
+  }
+}

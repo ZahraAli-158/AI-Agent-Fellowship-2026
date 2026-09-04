@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}AI Skills — {{ ws.name }}{% endblock %}
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>AI Skills</h1>
+    <p class="page-sub">Reusable, single-purpose capabilities you can run in any workspace.</p>
+  </div>
+</div>
+
+<div class="skill-grid">
+  {% for s in skills %}
+  <div class="skill-card" onclick="openSkillModal({{ s.id }}, '{{ s.name|e }}', '{{ s.icon }}')">
+    <div class="skill-icon">{{ s.icon }}</div>
+    <h3>{{ s.name }}</h3>
+    <p>{{ s.description }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% if recent %}
+<h2 class="section-title">Recent runs</h2>
+<p class="muted" style="margin-bottom:12px;">Click a run to reopen it in full, rerun it, or continue the conversation in chat.</p>
+<div class="recent-runs">
+  {% for r in recent %}
+  <div class="run-row" onclick="openRunModal({{ r.id }})">
+    <div class="run-meta">
+      <strong>{{ r.skill.name if r.skill else 'Skill' }}</strong>
+      <span>{{ r.created_at.strftime('%b %d, %H:%M') }} · {{ r.duration_ms }}ms</span>
+    </div>
+    <div class="run-io">
+      <div class="run-input">In: {{ r.input_text[:100] }}{% if r.input_text|length > 100 %}...{% endif %}</div>
+      <div class="run-output">Out: {{ r.output_text[:160] }}{% if r.output_text|length > 160 %}...{% endif %}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="modal" id="skill-modal">
+  <div class="modal-card wide">
+    <h3 id="skill-modal-title">Run skill</h3>
+    <textarea id="skill-input" rows="6" placeholder="Paste or type the text to run through this skill..."></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('skill-modal')">Cancel</button>
+      <button type="button" class="btn btn-primary" id="skill-run-btn" onclick="runSkill()">Run skill</button>
+    </div>
+    <div id="skill-output" class="ask-answer markdown-output"></div>
+  </div>
+</div>
+
+<div class="modal" id="run-detail-modal">
+  <div class="modal-card wide">
+    <h3 id="run-detail-title">Skill run</h3>
+    <div id="run-detail-meta" class="run-detail-meta"></div>
+
+    <label>Input</label>
+    <div id="run-detail-input" class="run-detail-box"></div>
+
+    <label>Output</label>
+    <div id="run-detail-output" class="run-detail-box markdown-output"></div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('run-detail-modal')">Close</button>
+      <button type="button" class="btn btn-outline" id="run-detail-rerun-btn" onclick="rerunFromDetail()">Rerun with this input</button>
+      <button type="button" class="btn btn-primary" id="run-detail-chat-btn" onclick="continueInChat()">💬 Continue in Chat</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.SKILL_CONFIG = { runUrlBase: "/workspaces/{{ ws.id }}/skills" };
+</script>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/skills.js') }}"></script>
+{% endblock %}

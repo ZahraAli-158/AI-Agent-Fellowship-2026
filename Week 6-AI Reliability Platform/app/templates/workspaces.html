@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Your Workspaces — AI Workspace Platform{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Your Workspaces</h1>
+    <p class="page-sub">Create a focused space for each project or team — each with its own assistant, documents, and memory.</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('create-ws-modal')">+ New workspace</button>
+</div>
+
+{% if workspaces %}
+<div class="ws-grid">
+  {% for ws in workspaces %}
+  <div class="ws-card">
+    <button class="ws-fav-btn {% if ws.is_favorite %}active{% endif %}" title="Favorite"
+            onclick="toggleFavorite(event, {{ ws.id }}, this)">{% if ws.is_favorite %}★{% else %}☆{% endif %}</button>
+    <a class="ws-card-link" href="{{ url_for('workspace.view_workspace', workspace_id=ws.id) }}">
+      <div class="ws-card-top">
+        <span class="ws-tag ws-tag-{{ ws.category|lower }}">{{ ws.category }}</span>
+      </div>
+      <h3>{{ ws.name }}</h3>
+      <p class="ws-role">{{ ws.assistant_name }}</p>
+      <div class="ws-meta">Created {{ ws.created_at.strftime('%b %d, %Y') }}</div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">🗂️</div>
+  <h3>No workspaces yet</h3>
+  <p>Create your first workspace to configure an assistant and start chatting.</p>
+  <button class="btn btn-primary" onclick="openModal('create-ws-modal')">+ New workspace</button>
+</div>
+{% endif %}
+
+{% if shared_workspaces %}
+<h2 class="section-title">Shared with you</h2>
+<div class="ws-grid">
+  {% for ws in shared_workspaces %}
+  <a class="ws-card" href="{{ url_for('workspace.view_workspace', workspace_id=ws.id) }}">
+    <div class="ws-card-top">
+      <span class="ws-tag ws-tag-{{ ws.category|lower }}">{{ ws.category }}</span>
+      <span class="ws-shared-badge">🤝 Shared by {{ ws.owner.username }}</span>
+    </div>
+    <h3>{{ ws.name }}</h3>
+    <p class="ws-role">{{ ws.assistant_name }}</p>
+    <div class="ws-meta">Created {{ ws.created_at.strftime('%b %d, %Y') }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="modal" id="create-ws-modal">
+  <div class="modal-card">
+    <h3>Create a new workspace</h3>
+    <form method="POST" action="{{ url_for('workspace.create_workspace') }}">
+      <label>Workspace name</label>
+      <input type="text" name="name" placeholder="e.g. Marketing Campaigns" required autofocus>
+
+      <label>Category</label>
+      <select name="category">
+        {% for cat in categories %}
+        <option value="{{ cat }}">{{ cat }}</option>
+        {% endfor %}
+      </select>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('create-ws-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create workspace</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+async function toggleFavorite(event, wsId, btn) {
+  event.preventDefault();
+  event.stopPropagation();
+  const res = await fetch(`/workspaces/${wsId}/favorite`, { method: "POST" });
+  const data = await res.json();
+  btn.classList.toggle("active", data.is_favorite);
+  btn.innerText = data.is_favorite ? "★" : "☆";
+}
+</script>
+{% endblock %}

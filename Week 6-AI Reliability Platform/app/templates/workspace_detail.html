@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}{{ ws.name }} — AI Workspace Platform{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>
+      {{ ws.name }}
+      {% if is_owner %}
+      <button class="ws-fav-btn inline {% if ws.is_favorite %}active{% endif %}" title="Favorite"
+              onclick="toggleFavoriteDetail({{ ws.id }}, this)">{% if ws.is_favorite %}★{% else %}☆{% endif %}</button>
+      {% endif %}
+      {% if not is_owner %}<span class="ws-shared-badge">🤝 Shared by {{ ws.owner.username }}</span>{% endif %}
+    </h1>
+    <p class="page-sub">{{ ws.assistant_name }} · {{ ws.assistant_role }}</p>
+  </div>
+  <div class="header-actions">
+    <form method="POST" action="{{ url_for('chat.new_conversation', workspace_id=ws.id) }}">
+      <button class="btn btn-primary">+ New conversation</button>
+    </form>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="conversations">Conversations</button>
+  {% if is_owner %}
+  <button class="tab-btn" data-tab="settings">Assistant Settings</button>
+  <button class="tab-btn" data-tab="sharing">Sharing</button>
+  <button class="tab-btn danger-tab" data-tab="danger">Danger Zone</button>
+  {% endif %}
+</div>
+
+<div class="tab-panel active" id="tab-conversations">
+  {% if conversations %}
+  <div class="convo-list">
+    {% for c in conversations %}
+    <a class="convo-row" href="{{ url_for('chat.open_conversation', workspace_id=ws.id, conversation_id=c.id) }}">
+      <div class="convo-icon">{% if c.is_pinned %}📌{% else %}💬{% endif %}</div>
+      <div class="convo-info">
+        <div class="convo-title">{{ c.title }}</div>
+        <div class="convo-meta">
+          {{ c.messages|length }} messages · updated {{ c.updated_at.strftime('%b %d, %Y %H:%M') }}
+          {% if c.tags %}
+            {% for t in c.tags.split(',') %}
+            <span class="tag-chip">🏷️ {{ t.strip() }}</span>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">💬</div>
+    <h3>No conversations yet</h3>
+    <p>Start a new conversation with {{ ws.assistant_name }}.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% if is_owner %}
+<div class="tab-panel" id="tab-settings">
+  <form method="POST" action="{{ url_for('workspace.update_settings', workspace_id=ws.id) }}" class="settings-form card">
+    <div class="form-grid">
+      <div>
+        <label>Assistant name</label>
+        <input type="text" name="assistant_name" value="{{ ws.assistant_name }}">
+      </div>
+      <div>
+        <label>Assistant role</label>
+        <input type="text" name="assistant_role" value="{{ ws.assistant_role }}">
+      </div>
+    </div>
+
+    <label>System prompt</label>
+    <textarea name="system_prompt" rows="4">{{ ws.system_prompt }}</textarea>
+
+    <div class="form-grid">
+      <div>
+        <label>Model</label>
+        <select name="model">
+          {% for m in ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3-flash", "gemini-3.1-pro-preview", "gemini-3.5-flash-lite", "gemini-2.5-flash"] %}
+          <option value="{{ m }}" {% if ws.model == m %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Personality</label>
+        <input type="text" name="personality" value="{{ ws.personality }}">
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div>
+        <label>Temperature ({{ ws.temperature }})</label>
+        <input type="range" name="temperature" min="0" max="2" step="0.1" value="{{ ws.temperature }}"
+               oninput="this.previousElementSibling.innerText = 'Temperature (' + this.value + ')'">
+      </div>
+      <div>
+        <label>Max tokens</label>
+        <input type="number" name="max_tokens" min="64" max="8192" value="{{ ws.max_tokens }}">
+      </div>
+    </div>
+
+    <label>Response style</label>
+    <select name="response_style">
+      {% for style in ["Balanced", "Concise", "Detailed", "Creative", "Formal", "Casual"] %}
+      <option value="{{ style }}" {% if ws.response_style == style %}selected{% endif %}>{{ style }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary" style="margin-top:16px;">Save settings</button>
+  </form>
+</div>
+
+<div class="tab-panel" id="tab-sharing">
+  <div class="card">
+    <h3>Share this workspace</h3>
+    <p style="margin-bottom:14px;">Collaborators can chat, upload documents, run skills, and view the dashboard — but can't change assistant settings, manage sharing, or delete the workspace.</p>
+    <form method="POST" action="{{ url_for('workspace.share_workspace', workspace_id=ws.id) }}" class="share-form">
+      <input type="text" name="identifier" placeholder="Username or email" required>
+      <button type="submit" class="btn btn-primary btn-sm">+ Share</button>
+    </form>
+
+    {% if ws.shares %}
+    <div class="share-list">
+      {% for share in ws.shares %}
+      <div class="share-row">
+        <span>👤 {{ share.user.username }} <span class="muted">({{ share.role }})</span></span>
+        <form method="POST" action="{{ url_for('workspace.revoke_share', workspace_id=ws.id, share_id=share.id) }}"
+              onsubmit="return confirm('Revoke access for {{ share.user.username }}?');">
+          <button type="submit" class="btn btn-outline btn-sm danger-text">Revoke</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted" style="margin-top:12px;">Not shared with anyone yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-danger">
+  <div class="card danger-card">
+    <h3>Delete this workspace</h3>
+    <p>This permanently deletes all conversations, documents, memory, and settings for <strong>{{ ws.name }}</strong>. This cannot be undone.</p>
+    <form method="POST" action="{{ url_for('workspace.delete_workspace', workspace_id=ws.id) }}"
+          onsubmit="return confirm('Delete workspace &quot;{{ ws.name }}&quot;? This cannot be undone.');">
+      <button type="submit" class="btn btn-danger">Delete workspace</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<script>
+async function toggleFavoriteDetail(wsId, btn) {
+  const res = await fetch(`/workspaces/${wsId}/favorite`, { method: "POST" });
+  const data = await res.json();
+  btn.classList.toggle("active", data.is_favorite);
+  btn.innerText = data.is_favorite ? "★" : "☆";
+}
+</script>
+{% endblock %}

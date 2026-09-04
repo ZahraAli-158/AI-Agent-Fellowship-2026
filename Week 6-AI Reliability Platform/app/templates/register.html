@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Create account — AI Workspace Platform{% endblock %}
+{% block guest_content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="brand center"><span class="brand-mark">✦</span><span class="brand-text">AI Workspace</span></div>
+    <h2>Create your account</h2>
+    <p class="auth-sub">Set up multiple AI workspaces in minutes.</p>
+
+    <form method="POST" class="auth-form">
+      <label>Username</label>
+      <input type="text" name="username" value="{{ username|default('') }}" required autofocus placeholder="jane_doe">
+
+      <label>Email</label>
+      <input type="email" name="email" value="{{ email|default('') }}" required placeholder="jane@company.com">
+
+      <label>Password</label>
+      <input type="password" name="password" required placeholder="At least 6 characters">
+
+      <label>Confirm password</label>
+      <input type="password" name="confirm_password" required placeholder="Repeat password">
+
+      <button type="submit" class="btn btn-primary btn-block">Create account</button>
+    </form>
+
+    <p class="auth-footer">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+  </div>
+</div>
+{% endblock %}

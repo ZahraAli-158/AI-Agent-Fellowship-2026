@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ convo.title }} — {{ agent.name }}{% endblock %}
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="agent-chat-layout">
+  <div class="chat-convo-panel">
+    <div class="chat-convo-panel-head">
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('agent.agent_detail', agent_key=agent.key) }}">← {{ agent.name }}</a>
+      <form method="POST" action="{{ url_for('agent.new_conversation', agent_key=agent.key) }}">
+        <button class="btn btn-primary btn-sm">+ New</button>
+      </form>
+    </div>
+    <div class="convo-mini-list" id="convo-mini-list">
+      {% for c in conversations %}
+      <a class="convo-mini {% if c.id == convo.id %}active{% endif %}" href="{{ url_for('agent.open_conversation', agent_key=agent.key, conversation_id=c.id) }}">
+        {{ c.title }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="chat-main">
+    <div class="chat-header">
+      <div class="chat-header-titlewrap">
+        <div class="chat-header-title" id="convo-title-display">{{ convo.title }}</div>
+      </div>
+      <div class="chat-header-actions">
+        <button class="icon-btn" title="Rename" onclick="openModal('rename-modal')">✏️</button>
+        <form method="POST" action="{{ url_for('agent.delete_conversation', agent_key=agent.key, conversation_id=convo.id) }}"
+              onsubmit="return confirm('Delete this conversation?');">
+          <button class="icon-btn danger" title="Delete">🗑️</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      {% if not convo.messages %}
+      <div class="chat-empty">
+        <div class="chat-empty-icon">{{ agent.icon }}</div>
+        <h3>Start working with {{ agent.name }}</h3>
+        <p>Try: "Here are my meeting notes: ..." or "What tasks do I have pending?"</p>
+      </div>
+      {% endif %}
+      {% for m in convo.messages %}
+        <div class="msg-row msg-{{ m.role }}" data-id="{{ m.id }}">
+          <div class="msg-avatar">{% if m.role == 'user' %}{{ current_user.username[0]|upper }}{% else %}{{ agent.icon }}{% endif %}</div>
+          <div class="msg-bubble">
+            {% if m.role == 'assistant' and m.tool_calls_list() %}
+            <div class="tool-call-log">
+              {% for tc in m.tool_calls_list() %}
+              <span class="tool-call-chip">🔧 {{ tc.tool }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="msg-text" data-raw="{{ m.content }}"></div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <form class="chat-input-bar" id="chat-form">
+      <textarea id="chat-input" placeholder="Message {{ agent.name }}..." rows="1" required></textarea>
+      <button type="button" class="icon-btn mic-btn" id="mic-btn" title="Voice input">🎤</button>
+      <button type="submit" class="btn btn-primary send-btn">➤</button>
+    </form>
+  </div>
+
+  <div class="agent-tasks-panel">
+    <h3 class="tasks-panel-heading">📋 Tasks</h3>
+    {% include "_agent_tasks.html" %}
+  </div>
+</div>
+
+<div class="modal" id="rename-modal">
+  <div class="modal-card">
+    <h3>Rename conversation</h3>
+    <form method="POST" action="{{ url_for('agent.rename_conversation', agent_key=agent.key, conversation_id=convo.id) }}">
+      <input type="text" name="title" value="{{ convo.title }}" required autofocus>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('rename-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  window.AGENT_CHAT_CONFIG = {
+    sendUrl: "{{ url_for('agent.send_message', agent_key=agent.key, conversation_id=convo.id) }}",
+    assistantInitial: "{{ agent.icon }}",
+    userInitial: "{{ current_user.username[0]|upper }}"
+  };
+  window.AGENT_TASKS_CONFIG = { base: "/agents/{{ agent.key }}/tasks" };
+</script>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/agent_tasks.js') }}"></script>
+<script src="{{ url_for('static', filename='js/agent_chat.js') }}"></script>
+{% endblock %}

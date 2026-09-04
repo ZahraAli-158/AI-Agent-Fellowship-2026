@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Agents — AI Workspace Platform{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Agents</h1>
+    <p class="page-sub">Specialized agents with real tools — separate from your workspaces. Each one can act on its own (create tasks, send email, etc.), not just chat.</p>
+  </div>
+</div>
+
+<div class="agent-grid">
+  {% for a in agents %}
+  <a class="agent-card" href="{{ url_for('agent.agent_detail', agent_key=a.key) }}">
+    <div class="agent-card-icon">{{ a.icon }}</div>
+    <h3>{{ a.name }}</h3>
+    <p>{{ a.description }}</p>
+    {% if task_counts[a.key] %}
+    <div class="agent-card-badge">{{ task_counts[a.key] }} pending task{{ 's' if task_counts[a.key] != 1 else '' }}</div>
+    {% endif %}
+  </a>
+  {% endfor %}
+
+  <div class="agent-card agent-card-coming-soon">
+    <div class="agent-card-icon">➕</div>
+    <h3>More agents coming</h3>
+    <p>Each agent is built one at a time, with its own tools for that specific job.</p>
+  </div>
+</div>
+{% endblock %}

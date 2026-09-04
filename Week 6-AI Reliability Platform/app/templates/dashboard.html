@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — {{ ws.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="page-sub">Usage, cost, and activity overview for {{ ws.name }}.</p>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-icon">💬</div>
+    <div class="stat-value">{{ stats.total_conversations }}</div>
+    <div class="stat-label">Conversations</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📚</div>
+    <div class="stat-value">{{ stats.total_documents }}</div>
+    <div class="stat-label">Documents</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🧠</div>
+    <div class="stat-value">{{ stats.total_memory_items }}</div>
+    <div class="stat-label">Memory items</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📝</div>
+    <div class="stat-value">{{ stats.total_prompts }}</div>
+    <div class="stat-label">Prompt templates</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🔢</div>
+    <div class="stat-value">{{ stats.total_input_tokens + stats.total_output_tokens }}</div>
+    <div class="stat-label">Total tokens</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">💵</div>
+    <div class="stat-value">${{ stats.estimated_cost }}</div>
+    <div class="stat-label">Estimated cost</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⚡</div>
+    <div class="stat-value">{{ stats.avg_latency }}ms</div>
+    <div class="stat-label">Avg. latency</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📈</div>
+    <div class="stat-value">{{ stats.total_events }}</div>
+    <div class="stat-label">Logged events</div>
+  </div>
+</div>
+
+<div class="dash-columns">
+  <div class="card">
+    <h3>Recent activity</h3>
+    {% if recent_activity %}
+    <div class="activity-list">
+      {% for l in recent_activity %}
+      <div class="activity-row">
+        <span class="activity-type activity-{{ l.event_type }}">{{ l.event_type }}</span>
+        <span class="activity-msg">{{ l.message }}</span>
+        <span class="activity-time">{{ l.created_at.strftime('%b %d, %H:%M') }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No activity yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Long-term memory</h3>
+    <form class="memory-add-form" onsubmit="return addMemory(event)">
+      <input type="text" id="memory-input" placeholder="Pin a fact for this assistant to remember...">
+      <button class="btn btn-primary btn-sm" type="submit">Pin</button>
+    </form>
+    {% if memory_items %}
+    <div class="memory-list">
+      {% for m in memory_items %}
+      <div class="memory-row" data-id="{{ m.id }}">
+        <span class="memory-content">{% if m.is_pinned %}📌{% endif %} {{ m.content }}</span>
+        <span class="memory-actions">
+          <button class="icon-btn" onclick="toggleMemoryPin({{ m.id }})" title="Pin/unpin">📌</button>
+          <button class="icon-btn danger" onclick="deleteMemory({{ m.id }})" title="Delete">🗑️</button>
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No memory recorded yet — it builds automatically as you chat.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  window.DASH_CONFIG = { base: "/workspaces/{{ ws.id }}/dashboard" };
+</script>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

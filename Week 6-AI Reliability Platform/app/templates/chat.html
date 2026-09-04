@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}{{ convo.title }} — {{ ws.name }}{% endblock %}
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="chat-layout">
+  <div class="chat-convo-panel">
+    <div class="chat-convo-panel-head">
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('workspace.view_workspace', workspace_id=ws.id) }}">← Workspace</a>
+      <form method="POST" action="{{ url_for('chat.new_conversation', workspace_id=ws.id) }}">
+        <button class="btn btn-primary btn-sm">+ New</button>
+      </form>
+    </div>
+    <input type="text" id="convo-search" placeholder="🔍 Search conversations..." class="search-input">
+    <div class="convo-mini-list" id="convo-mini-list">
+      {% for c in conversations %}
+      <a class="convo-mini {% if c.id == convo.id %}active{% endif %}" href="{{ url_for('chat.open_conversation', workspace_id=ws.id, conversation_id=c.id) }}">
+        {% if c.is_pinned %}📌{% endif %} {{ c.title }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="chat-main">
+    <div class="chat-header">
+      <div class="chat-header-titlewrap">
+        <div class="chat-header-title" id="convo-title-display">{{ convo.title }}</div>
+        <div class="chat-tags-row" id="chat-tags-row">
+          {% if convo.tags %}
+            {% for t in convo.tags.split(',') %}
+            <span class="tag-chip">🏷️ {{ t.strip() }}</span>
+            {% endfor %}
+          {% endif %}
+          <button class="icon-btn tiny" title="Edit tags" onclick="openModal('tags-modal')">+ tag</button>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button class="icon-btn" title="Rename" onclick="openModal('rename-modal')">✏️</button>
+        <button class="icon-btn" id="pin-btn" title="Pin" onclick="togglePin({{ convo.id }})">{% if convo.is_pinned %}📌{% else %}📍{% endif %}</button>
+        <a class="icon-btn" title="Export as Markdown" href="{{ url_for('chat.export_conversation', workspace_id=ws.id, conversation_id=convo.id, format='markdown') }}">⬇️ MD</a>
+        <a class="icon-btn" title="Export as PDF" href="{{ url_for('chat.export_conversation', workspace_id=ws.id, conversation_id=convo.id, format='pdf') }}">⬇️ PDF</a>
+        <form method="POST" action="{{ url_for('chat.delete_conversation', workspace_id=ws.id, conversation_id=convo.id) }}"
+              onsubmit="return confirm('Delete this conversation?');">
+          <button class="icon-btn danger" title="Delete">🗑️</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      {% if not convo.messages %}
+      <div class="chat-empty">
+        <div class="chat-empty-icon">✦</div>
+        <h3>Start chatting with {{ ws.assistant_name }}</h3>
+        <p>{{ ws.assistant_role }}</p>
+      </div>
+      {% endif %}
+      {% for m in convo.messages %}
+        <div class="msg-row msg-{{ m.role }}" data-id="{{ m.id }}">
+          <div class="msg-avatar">{% if m.role == 'user' %}{{ current_user.username[0]|upper }}{% else %}✦{% endif %}</div>
+          <div class="msg-bubble">
+            <div class="msg-text" data-raw="{{ m.content }}"></div>
+            {% if m.citations_list() %}
+            <div class="msg-citations">
+              {% for c in m.citations_list() %}
+              <span class="citation-chip" title="{{ c.snippet }}">📄 {{ c.document }} · chunk {{ c.chunk_index }} ({{ (c.score*100)|round|int }}%)</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="msg-actions">
+              <button class="msg-action-btn" title="Pin message" onclick="toggleMessagePin({{ m.id }}, this)">{% if m.is_pinned %}📌{% else %}📍{% endif %}</button>
+              {% if m.role == 'assistant' %}
+              <button class="msg-action-btn" title="Read aloud" onclick="speakMessage(this)">🔊</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <form class="chat-input-bar" id="chat-form">
+      <label class="knowledge-toggle">
+        <input type="checkbox" id="use-knowledge" name="use_knowledge" checked>
+        <span>📚 Use knowledge base</span>
+      </label>
+      <textarea id="chat-input" placeholder="Message {{ ws.assistant_name }}..." rows="1" required></textarea>
+      <button type="button" class="icon-btn mic-btn" id="mic-btn" title="Voice input">🎤</button>
+      <button type="submit" class="btn btn-primary send-btn">➤</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="rename-modal">
+  <div class="modal-card">
+    <h3>Rename conversation</h3>
+    <form method="POST" action="{{ url_for('chat.rename_conversation', workspace_id=ws.id, conversation_id=convo.id) }}">
+      <input type="text" name="title" value="{{ convo.title }}" required autofocus>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('rename-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="tags-modal">
+  <div class="modal-card">
+    <h3>Edit tags</h3>
+    <p style="margin-bottom:10px;">Comma-separated, up to 8 tags.</p>
+    <input type="text" id="tags-input" value="{{ convo.tags or '' }}" placeholder="e.g. urgent, client-x, research">
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('tags-modal')">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="saveTags()">Save tags</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.CHAT_CONFIG = {
+    sendUrl: "{{ url_for('chat.send_message', workspace_id=ws.id, conversation_id=convo.id) }}",
+    searchUrl: "{{ url_for('chat.search_conversations', workspace_id=ws.id) }}",
+    pinUrlBase: "/workspaces/{{ ws.id }}/chat",
+    tagsUrl: "{{ url_for('chat.update_tags', workspace_id=ws.id, conversation_id=convo.id) }}",
+    assistantInitial: "✦",
+    userInitial: "{{ current_user.username[0]|upper }}"
+  };
+</script>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

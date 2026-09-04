@@ -1,0 +1,28 @@
+<div class="card">
+  <form class="task-add-form" onsubmit="return addAgentTask(event)">
+    <input type="text" id="task-title-input" placeholder="Add a task manually...">
+    <input type="date" id="task-due-input" title="Due date (optional)">
+    <button class="btn btn-primary btn-sm" type="submit">+ Add</button>
+  </form>
+
+  <div class="task-list" id="agent-task-list">
+    {% for t in tasks %}
+    <div class="task-row {% if t.status == 'completed' %}task-done{% endif %}" data-id="{{ t.id }}">
+      <button class="task-check" onclick="toggleAgentTask({{ t.id }})" title="Mark complete">
+        {% if t.status == 'completed' %}✅{% else %}⬜{% endif %}
+      </button>
+      <div class="task-body">
+        <div class="task-title">{{ t.title }}</div>
+        {% if t.description %}<div class="task-desc">{{ t.description }}</div>{% endif %}
+        <div class="task-meta">
+          <span class="task-status-chip task-status-{{ t.status }}">{{ t.status.replace('_', ' ') }}</span>
+          {% if t.due_date %}<span>📅 {{ t.due_date.strftime('%b %d, %Y') }}</span>{% endif %}
+        </div>
+      </div>
+      <button class="icon-btn danger" onclick="deleteAgentTask({{ t.id }})" title="Delete">🗑️</button>
+    </div>
+    {% else %}
+    <p class="muted" id="agent-task-empty">No tasks yet — add one above, or ask the agent to create some from your meeting notes.</p>
+    {% endfor %}
+  </div>
+</div>

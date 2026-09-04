@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Prompt Library — {{ ws.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Prompt Library</h1>
+    <p class="page-sub">Save and reuse your best prompts across every workspace.</p>
+  </div>
+  <button class="btn btn-primary" onclick="openNewPromptModal()">+ New prompt</button>
+</div>
+
+<div class="chip-row">
+  <button class="chip active" data-filter="all">All</button>
+  {% for cat in categories %}
+  <button class="chip" data-filter="{{ cat }}">{{ cat }}</button>
+  {% endfor %}
+</div>
+
+{% if prompts %}
+<div class="prompt-grid" id="prompt-grid">
+  {% for p in prompts %}
+  <div class="prompt-card" data-category="{{ p.category }}"
+       data-id="{{ p.id }}" data-title="{{ p.title }}" data-prompt-category="{{ p.category }}" data-content="{{ p.content }}">
+    <div class="prompt-card-head">
+      <span class="ws-tag">{{ p.category }}</span>
+      <span class="use-count">used {{ p.use_count }}×</span>
+    </div>
+    <h3>{{ p.title }}</h3>
+    <p class="prompt-preview">{{ p.content[:140] }}{% if p.content|length > 140 %}...{% endif %}</p>
+    <div class="prompt-actions">
+      <button class="btn btn-outline btn-sm" onclick="editPromptFromCard(this)">Edit</button>
+      <form method="POST" action="{{ url_for('prompt.delete_prompt', workspace_id=ws.id, prompt_id=p.id) }}"
+            onsubmit="return confirm('Delete this prompt?');">
+        <button class="btn btn-outline btn-sm danger-text">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">📝</div>
+  <h3>No saved prompts yet</h3>
+  <p>Save your favorite prompts and reuse them anywhere.</p>
+</div>
+{% endif %}
+
+<div class="modal" id="new-prompt-modal">
+  <div class="modal-card">
+    <h3 id="prompt-modal-heading">New prompt template</h3>
+    <form method="POST" action="{{ url_for('prompt.create_prompt', workspace_id=ws.id) }}" id="prompt-form">
+      <label>Title</label>
+      <input type="text" name="title" id="prompt-title" required>
+
+      <label>Category</label>
+      <select name="category" id="prompt-category">
+        {% for cat in categories %}
+        <option value="{{ cat }}">{{ cat }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Prompt content</label>
+      <textarea name="content" id="prompt-content" rows="6" required></textarea>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('new-prompt-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save prompt</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const CREATE_PROMPT_URL = "{{ url_for('prompt.create_prompt', workspace_id=ws.id) }}";
+const EDIT_PROMPT_URL_BASE = "/workspaces/{{ ws.id }}/prompts";
+
+function openNewPromptModal() {
+  document.getElementById('prompt-modal-heading').innerText = 'New prompt template';
+  document.getElementById('prompt-form').action = CREATE_PROMPT_URL;
+  document.getElementById('prompt-title').value = '';
+  document.getElementById('prompt-category').value = 'Custom';
+  document.getElementById('prompt-content').value = '';
+  openModal('new-prompt-modal');
+}
+
+// Reads the safely HTML-escaped data-* attributes off the card instead of
+// building a JS call inline in onclick (which broke whenever prompt content
+// contained a double quote / JSON-escaped text colliding with the
+// onclick="..." attribute's own quotes).
+function editPromptFromCard(buttonEl) {
+  const card = buttonEl.closest('.prompt-card');
+  const id = card.dataset.id;
+  const title = card.dataset.title;
+  const category = card.dataset.promptCategory;
+  const content = card.dataset.content;
+
+  document.getElementById('prompt-modal-heading').innerText = 'Edit prompt template';
+  document.getElementById('prompt-form').action = EDIT_PROMPT_URL_BASE + '/' + id + '/edit';
+  document.getElementById('prompt-title').value = title;
+  document.getElementById('prompt-category').value = category;
+  document.getElementById('prompt-content').value = content;
+  openModal('new-prompt-modal');
+}
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const filter = chip.dataset.filter;
+    document.querySelectorAll('.prompt-card').forEach(card => {
+      card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}AI Workspace Platform — Build with intelligent agents{% endblock %}
+{% block guest_content %}
+<div class="landing">
+  <header class="landing-nav">
+    <div class="brand"><span class="brand-mark">✦</span><span class="brand-text">AI Workspace</span></div>
+    <div class="landing-nav-actions">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-ghost">Log in</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Get started</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-badge">✦ Enterprise-grade AI agent platform</div>
+    <h1>One workspace for every <span class="grad-text">AI assistant</span> your team needs.</h1>
+    <p class="hero-sub">
+      Configure assistants, ground them in your own documents, give them long-term memory,
+      and reuse skills and prompts across every project — all in one clean workspace.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Create your workspace</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">I have an account</a>
+    </div>
+  </section>
+
+  <section class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <h3>Persistent Chat</h3>
+      <p>Multi-session conversations with search, pinning, rename, and export.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📚</div>
+      <h3>Knowledge Base</h3>
+      <p>Upload PDFs, DOCX, TXT, and Markdown — get semantic search with citations.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧠</div>
+      <h3>Long-Term Memory</h3>
+      <p>Assistants remember preferences and prior discussions across sessions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧩</div>
+      <h3>Reusable AI Skills</h3>
+      <p>Research, summarization, reports, SWOT, code review, and more — one click away.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📝</div>
+      <h3>Prompt Library</h3>
+      <p>Save, organize, and reuse your best prompts by category.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Usage Dashboard</h3>
+      <p>Track conversations, tokens, estimated cost, and activity per workspace.</p>
+    </div>
+  </section>
+
+  <footer class="landing-footer">Built for AI Summer Internship 2026 — Week 5 · AI Workspace Platform</footer>
+</div>
+{% endblock %}

@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% block title %}Reliability & Observability{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Reliability & Observability</h1>
+    <p class="page-sub">Week 6 quality dashboard — system health, AI quality, performance, usage, cost, and security, built on top of the Week 5 platform.</p>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-icon">📨</div>
+    <div class="stat-value">{{ reliability.total_requests }}</div>
+    <div class="stat-label">Requests traced</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">✅</div>
+    <div class="stat-value">{{ reliability.successful_requests }}</div>
+    <div class="stat-label">Successful requests</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">❌</div>
+    <div class="stat-value">{{ reliability.failed_requests }}</div>
+    <div class="stat-label">Failed requests</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🚨</div>
+    <div class="stat-value">{{ reliability.active_errors }}</div>
+    <div class="stat-label">Active errors (24h)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⚠️</div>
+    <div class="stat-value">{{ (reliability.failure_rate * 100) | round(1) }}%</div>
+    <div class="stat-label">Failure rate</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🔁</div>
+    <div class="stat-value">{{ (reliability.retry_rate * 100) | round(1) }}%</div>
+    <div class="stat-label">Retry rate</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⏱️</div>
+    <div class="stat-value">{{ (reliability.timeout_rate * 100) | round(1) }}%</div>
+    <div class="stat-label">Timeout rate</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🧠</div>
+    <div class="stat-value">{{ calls.model_calls }}</div>
+    <div class="stat-label">Model calls</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🔧</div>
+    <div class="stat-value">{{ calls.tool_calls }}</div>
+    <div class="stat-label">Tool calls</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⚡</div>
+    <div class="stat-value">{{ latency.avg_ms }}ms</div>
+    <div class="stat-label">Avg latency</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📈</div>
+    <div class="stat-value">{{ latency.p50_ms }}ms</div>
+    <div class="stat-label">P50 latency</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📊</div>
+    <div class="stat-value">{{ latency.p95_ms }}ms</div>
+    <div class="stat-label">P95 latency</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⬇️</div>
+    <div class="stat-value">{{ usage.input_tokens }}</div>
+    <div class="stat-label">Input tokens</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⬆️</div>
+    <div class="stat-value">{{ usage.output_tokens }}</div>
+    <div class="stat-label">Output tokens</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🔢</div>
+    <div class="stat-value">{{ usage.total_tokens }}</div>
+    <div class="stat-label">Total tokens</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">💵</div>
+    <div class="stat-value">${{ cost.total_estimated_cost }}</div>
+    <div class="stat-label">Total estimated cost</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">💳</div>
+    <div class="stat-value">${{ cost.avg_cost_per_request }}</div>
+    <div class="stat-label">Avg cost per request</div>
+  </div>
+</div>
+
+{% if rag_evaluation or agent_evaluation %}
+<div class="dash-columns">
+  {% if rag_evaluation %}
+  <div class="card">
+    <h3>📚 RAG quality (latest run: {{ latest_report.run_label }})</h3>
+    <div class="stat-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="stat-card"><div class="stat-value">{{ (rag_evaluation.retrieval_hit_rate * 100) | round(1) if rag_evaluation.retrieval_hit_rate is not none else '—' }}%</div><div class="stat-label">Retrieval hit rate</div></div>
+      <div class="stat-card"><div class="stat-value">{{ (rag_evaluation.context_relevance * 100) | round(1) if rag_evaluation.context_relevance is not none else '—' }}%</div><div class="stat-label">Context relevance</div></div>
+      <div class="stat-card"><div class="stat-value">{{ (rag_evaluation.answer_groundedness * 100) | round(1) if rag_evaluation.answer_groundedness is not none else '—' }}%</div><div class="stat-label">RAG groundedness</div></div>
+      <div class="stat-card"><div class="stat-value">{{ (rag_evaluation.citation_correctness * 100) | round(1) if rag_evaluation.citation_correctness is not none else '—' }}%</div><div class="stat-label">Citation correctness</div></div>
+    </div>
+  </div>
+  {% endif %}
+  {% if agent_evaluation %}
+  <div class="card">
+    <h3>🤖 Agent evaluation (latest run: {{ latest_report.run_label }})</h3>
+    <div class="stat-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="stat-card"><div class="stat-value">{{ agent_evaluation.avg_loop_frequency }}</div><div class="stat-label">Avg loop frequency</div></div>
+      <div class="stat-card"><div class="stat-value">{{ agent_evaluation.n_cases }}</div><div class="stat-label">Cases evaluated</div></div>
+    </div>
+    {% if agent_evaluation.by_check %}
+    <table class="simple-table">
+      <thead><tr><th>Check</th><th>Pass rate</th></tr></thead>
+      <tbody>
+        {% for name, bucket in agent_evaluation.by_check.items() %}
+        <tr><td>{{ name }}</td><td>{{ (bucket.rate * 100) | round(1) }}%</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="dash-columns">
+  <div class="card">
+    <h3>🛡️ Security</h3>
+    <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1rem;">
+      <div class="stat-card"><div class="stat-value">{{ guardrail_events | length }}</div><div class="stat-label">Guardrail triggers (recent)</div></div>
+      <div class="stat-card"><div class="stat-value">{{ injection_attempts }}</div><div class="stat-label">Injection attempts</div></div>
+      <div class="stat-card"><div class="stat-value">{{ unauthorized_attempts }}</div><div class="stat-label">Unauthorized/approval-bypass attempts</div></div>
+    </div>
+    {% if guardrail_events %}
+    <div class="activity-list">
+      {% for g in guardrail_events[:15] %}
+      <div class="activity-row">
+        <span class="ic">{{ '🚫' if g.blocked else '⚠️' }}</span>
+        <div>
+          <div><strong>{{ g.rule }}</strong> — {{ g.direction }} · severity: {{ g.severity }}</div>
+          <div class="muted">{{ g.detail }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No guardrail triggers recorded yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>🧪 Evaluation runs</h3>
+    {% if report_summaries %}
+    <table class="simple-table">
+      <thead><tr><th>Run</th><th>Prompt</th><th>Success</th><th>Judge avg</th><th>Tool acc.</th><th>P95</th><th>Cost</th></tr></thead>
+      <tbody>
+        {% for s in report_summaries %}
+        <tr>
+          <td>{{ s.run_label }}</td>
+          <td>{{ s.prompt_version }}</td>
+          <td>{{ (s.task_success_rate * 100) | round(1) }}%</td>
+          <td>{{ s.avg_judge_score }}</td>
+          <td>{{ (s.tool_selection_accuracy * 100) | round(1) if s.tool_selection_accuracy is not none else '—' }}{{ '%' if s.tool_selection_accuracy is not none else '' }}</td>
+          <td>{{ s.p95_latency_ms }}ms</td>
+          <td>${{ s.total_cost }}</td>        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No evaluation reports found yet. Run <code>python -m evaluation.runner --label baseline_v1</code> to generate one.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h3>⏱️ Latency by pipeline stage</h3>
+  {% if latency_breakdown.bottleneck %}
+  <p class="muted">Largest bottleneck: <strong>{{ latency_breakdown.bottleneck.stage }}</strong> (avg {{ latency_breakdown.bottleneck.mean_ms }}ms{{ ', ' + (latency_breakdown.bottleneck.share_of_end_to_end * 100) | round(1) | string + '% of end-to-end' if latency_breakdown.bottleneck.share_of_end_to_end is not none else '' }})</p>
+  {% endif %}
+  <table class="simple-table">
+    <thead><tr><th>Stage</th><th>Mean</th><th>Median</th><th>P50</th><th>P95</th><th>Samples</th></tr></thead>
+    <tbody>
+      {% for name, s in latency_breakdown.stages.items() %}
+      <tr>
+        <td>{{ {'llm_latency': 'LLM', 'retrieval_latency': 'Retrieval', 'tool_latency': 'Tool', 'database_latency': 'Database', 'end_to_end_latency': 'End-to-end'}.get(name, name) }}</td>
+        <td>{{ s.mean_ms if s.mean_ms is not none else '—' }}{{ 'ms' if s.mean_ms is not none else '' }}</td>
+        <td>{{ s.median_ms if s.median_ms is not none else '—' }}{{ 'ms' if s.median_ms is not none else '' }}</td>
+        <td>{{ s.p50_ms if s.p50_ms is not none else '—' }}{{ 'ms' if s.p50_ms is not none else '' }}</td>
+        <td>{{ s.p95_ms if s.p95_ms is not none else '—' }}{{ 'ms' if s.p95_ms is not none else '' }}</td>
+        <td>{{ s.n }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">{{ latency_breakdown.stages.database_latency.note }}</p>
+</div>
+
+<div class="dash-columns">
+  <div class="card">
+    <h3>💵 Cost by model</h3>
+    {% if cost_model_breakdown %}
+    <table class="simple-table">
+      <thead><tr><th>Model</th><th>Requests</th><th>Total cost</th><th>Avg/request</th></tr></thead>
+      <tbody>
+        {% for name, c in cost_model_breakdown.items() %}
+        <tr><td>{{ name }}</td><td>{{ c.requests }}</td><td>${{ c.total_estimated_cost }}</td><td>${{ c.avg_cost_per_request }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">No traces yet.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>💵 Cost by agent</h3>
+    {% if cost_agent_breakdown %}
+    <table class="simple-table">
+      <thead><tr><th>Agent</th><th>Requests</th><th>Total cost</th></tr></thead>
+      <tbody>
+        {% for name, c in cost_agent_breakdown.items() %}
+        <tr><td>{{ name }}</td><td>{{ c.requests }}</td><td>${{ c.total_estimated_cost }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">No traces yet.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>💵 Cost by feature</h3>
+    {% if cost_feature_breakdown %}
+    <table class="simple-table">
+      <thead><tr><th>Feature</th><th>Requests</th><th>Total cost</th></tr></thead>
+      <tbody>
+        {% for name, c in cost_feature_breakdown.items() %}
+        <tr><td>{{ name }}</td><td>{{ c.requests }}</td><td>${{ c.total_estimated_cost }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">No traces yet.</p>{% endif %}
+  </div>
+</div>
+
+<div class="dash-columns">
+  <div class="card">
+    <h3>📅 Requests by model</h3>
+    {% if by_model %}
+    <table class="simple-table">
+      <thead><tr><th>Model</th><th>Requests</th><th>Avg latency</th><th>Total cost</th></tr></thead>
+      <tbody>
+        {% for m, bucket in by_model.items() %}
+        <tr><td>{{ m }}</td><td>{{ bucket.requests }}</td><td>{{ bucket.avg_latency_ms }}ms</td><td>${{ bucket.total_cost }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No traces yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>📅 Requests by date</h3>
+    {% if by_date %}
+    <table class="simple-table">
+      <thead><tr><th>Date</th><th>Requests</th><th>Failed</th></tr></thead>
+      <tbody>
+        {% for d, bucket in by_date %}
+        <tr><td>{{ d }}</td><td>{{ bucket.requests }}</td><td>{{ bucket.failed }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No traces yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if by_category %}
+<div class="card">
+  <h3>🗂️ Success rate by test category (latest run: {{ latest_report.run_label }})</h3>
+  <table class="simple-table">
+    <thead><tr><th>Category</th><th>Total</th><th>Passed</th><th>Failed</th><th>Success rate</th></tr></thead>
+    <tbody>
+      {% for cat, bucket in by_category.items() %}
+      <tr>
+        <td>{{ cat }}</td><td>{{ bucket.total }}</td><td>{{ bucket.passed }}</td><td>{{ bucket.failed }}</td>
+        <td>{{ (bucket.success_rate * 100) | round(1) }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if latest_report and latest_report.failure_code_breakdown %}
+<div class="card">
+  <h3>🏷️ Failures by code (latest run: {{ latest_report.run_label }})</h3>
+  <table class="simple-table">
+    <thead><tr><th>Code</th><th>Test IDs</th><th>Count</th></tr></thead>
+    <tbody>
+      {% for code, ids in latest_report.failure_code_breakdown.items() %}
+      <tr><td>{{ code }}</td><td>{{ ids | join(', ') }}</td><td>{{ ids | length }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3>🔍 Recent traces</h3>
+  {% if recent_traces %}
+  <table class="simple-table">
+    <thead><tr><th>Time</th><th>Type</th><th>Model</th><th>Outcome</th><th>Latency</th><th>Tokens</th><th>Cost</th><th></th></tr></thead>
+    <tbody>
+      {% for t in recent_traces %}
+      <tr>
+        <td>{{ t.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ t.request_type }}</td>
+        <td>{{ t.model or '—' }}</td>
+        <td>
+          {% if t.final_outcome == 'success' %}<span class="badge badge-ok">success</span>
+          {% elif t.final_outcome == 'failure' %}<span class="badge badge-fail">failure</span>
+          {% else %}<span class="badge badge-warn">partial</span>{% endif %}
+        </td>
+        <td>{{ t.total_latency_ms }}ms</td>
+        <td>{{ t.input_tokens + t.output_tokens }}</td>
+        <td>${{ '%.6f' | format(t.estimated_cost) }}</td>
+        <td><a href="{{ url_for('observability.view_trace', trace_id=t.trace_id) }}">inspect →</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No traces recorded yet — traces are created automatically as you use the platform once tracing is wired into a route (see app/observability/tracing.py).</p>
+  {% endif %}
+</div>
+{% endblock %}

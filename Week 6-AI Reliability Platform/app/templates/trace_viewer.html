@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Trace {{ trace.trace_id[:8] }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Trace {{ trace.trace_id[:8] }}</h1>
+    <p class="page-sub">
+      <a href="{{ url_for('observability.view_dashboard') }}">← Back to dashboard</a>
+    </p>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-value">{{ trace.request_type }}</div><div class="stat-label">Request type</div></div>
+  <div class="stat-card"><div class="stat-value">{{ trace.model or '—' }}</div><div class="stat-label">Model</div></div>
+  <div class="stat-card"><div class="stat-value">{{ trace.prompt_version or '—' }}</div><div class="stat-label">Prompt version</div></div>
+  <div class="stat-card"><div class="stat-value">{{ trace.total_latency_ms }}ms</div><div class="stat-label">Total latency</div></div>
+  <div class="stat-card"><div class="stat-value">{{ trace.input_tokens + trace.output_tokens }}</div><div class="stat-label">Tokens</div></div>
+  <div class="stat-card"><div class="stat-value">${{ '%.6f' | format(trace.estimated_cost) }}</div><div class="stat-label">Estimated cost</div></div>
+</div>
+
+<div class="card">
+  <h3>Request</h3>
+  <p>{{ trace.input_text }}</p>
+</div>
+
+<div class="card">
+  <h3>Pipeline steps</h3>
+  <p class="muted">Grouped into the standard stages: Model Call → Retrieval → Agent Decision → Tool Call → Tool Result. Each stage shows start order, duration, status, and metadata.</p>
+  {% if steps %}
+  <div class="activity-list">
+    {% for s in steps %}
+    <div class="activity-row">
+      <span class="ic">
+        {% if s.status == 'ok' %}✅{% elif s.status == 'failed' %}❌{% elif s.status == 'retried' %}🔁{% elif s.status == 'requires_approval' %}🔒{% else %}⏭️{% endif %}
+      </span>
+      <div>
+        <div>
+          <strong>{{ loop.index }}. {{ {'model_call': 'Model Call', 'retrieval': 'Retrieval', 'agent_decision': 'Agent Decision', 'tool_call': 'Tool Call / Tool Result', 'guardrail_input': 'Input Guardrail', 'guardrail_output': 'Output Guardrail'}.get(s.step_type, s.step_type) }}</strong>
+          — {{ s.name }} ({{ s.duration_ms }}ms, {{ s.status }})
+        </div>
+        {% set meta = s.metadata_dict() %}
+        {% if meta %}
+        <div class="muted">{{ meta }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No individual steps recorded for this trace (chat requests trace model_call + retrieval; agent requests additionally trace agent_decision and one tool_call step per tool the model actually invoked).</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Retrieved documents</h3>
+  {% if trace.retrieved_docs_list() %}
+  <ul>{% for d in trace.retrieved_docs_list() %}<li>{{ d }}</li>{% endfor %}</ul>
+  {% else %}
+  <p class="muted">None retrieved for this request.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Tool calls</h3>
+  {% if trace.tool_calls_list() %}
+  <table class="simple-table">
+    <thead><tr><th>Tool</th><th>Args</th><th>Duration</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for tc in trace.tool_calls_list() %}
+      <tr><td>{{ tc.tool }}</td><td>{{ tc.args }}</td><td>{{ tc.duration_ms }}ms</td><td>{{ tc.status }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No tool calls in this request.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Final response</h3>
+  <p>{{ trace.output_text }}</p>
+  {% if trace.error_status %}
+  <p class="muted">Error status: {{ trace.error_status }}</p>
+  {% endif %}
+  <p>Final outcome: <strong>{{ trace.final_outcome }}</strong></p>
+</div>
+{% endblock %}
